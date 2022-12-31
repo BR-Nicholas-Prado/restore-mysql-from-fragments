@@ -1,0 +1,41 @@
+
+= issue yyyyMMdd
+
+== title_here
+
+* assignee : 
+* status : to do
+* priority : 
+
+desc_here
+
+////
+== comments
+=== yyyy-MM-dd (hh:MM)
+
+=== --
+
+comment author : 
+
+comment_here
+////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

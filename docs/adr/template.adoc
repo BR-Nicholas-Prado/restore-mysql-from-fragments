@@ -1,0 +1,37 @@
+
+= # Template for architecture decision records
+
+////
+The authors of ${artifactId} release this file under ${license} license terms.
+////
+
+Status : 
+
+== Context
+
+
+
+== Decision
+
+
+
+=== Deciders
+
+* 
+
+== Consequences
+
+
+
+////
+status : { proposed | rejected | accepted | deprecated | superseded }
+
+== Outcomes
+
+
+context - decision drivers, problem statement
+
+== Alternatives
+== Links / related decisions, artifacts
+////
+

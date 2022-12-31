@@ -1,0 +1,18 @@
+
+= Restore Fragmented Database Backup Documentation
+
+////
+The authors of restore_frag_db release this file under Mozilla Public license v2.0 or later terms.
+////
+
+== licenses
+
+Files with the text of the licenses that the dependencies used.
+
+== issues
+
+Files tracking progress of particular efforts.
+
+== contributors
+
+Contributor license agreements.

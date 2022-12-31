@@ -1,0 +1,42 @@
+
+= issue 20221231
+
+== Run at all
+
+* assignee : Nicholas Prado
+* status : todo
+* priority : high
+
+This script needs to insert a bunch of sql scripts that workflo created.
+Hardcoding their database password, url, etc is acceptable just to accomplish the initial task.
+
+////
+== comments
+=== yyyy-MM-dd (hh:MM)
+
+=== --
+
+comment author : 
+
+comment_here
+////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
