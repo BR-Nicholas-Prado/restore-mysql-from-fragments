@@ -4,7 +4,7 @@
 == Run at all
 
 * assignee : Nicholas Prado
-* status : todo
+* status : complete
 * priority : high
 
 This script needs to insert a bunch of sql scripts that workflo created.

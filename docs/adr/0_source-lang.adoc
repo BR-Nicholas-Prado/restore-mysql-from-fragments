@@ -1,0 +1,41 @@
+
+= 0 Implementation Source Language
+
+////
+The authors of restore_frag_db release this file under Mozilla Public license v2.0 or later terms.
+////
+
+Status : accepted
+
+== Context
+
+Need to decide which language to write the script with.
+
+== Decision
+
+Write the script with Java.
+
+=== Deciders
+
+* Nicholas Prado
+
+== Consequences
+
+Requires a jre to run.
+
+All of our developers are familiar with java.
+
+Simpler to eventually use json workflo run config file, compared to a shell language (ex bash).
+
+////
+status : { proposed | rejected | accepted | deprecated | superseded }
+
+== Outcomes
+
+
+context - decision drivers, problem statement
+
+== Alternatives
+== Links / related decisions, artifacts
+////
+
