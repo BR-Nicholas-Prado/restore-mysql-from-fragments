@@ -17,6 +17,7 @@ import java.util.LinkedList;
 import java.util.stream.Stream;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 //import com.alibaba.fastjson.JSON;
 
@@ -26,13 +27,30 @@ Runs sql scripts in the working directory using the supplied workflo json run co
 public class RfdInit
 {
 
+	private class DatabaseInformation {
+		String
+			pathToMysqlExecutable = "",
+			hostIpv4Address = "",
+			hostPort = "",
+			serverUser = "",
+			serverPassword = "",
+			datbaseName = "";
+	}
+
 	private Path workfloRoot;
 
 
 	public static void main(
 			String[] args
 	) {
-		new RfdInit().runScripts( "F:\\shared\\autoplan\\backups\\12-31-2022_mor9" );
+		if ( args.length < 1 ) {
+			System.out.println( "needs start arg for working folder" );
+			return;
+		}
+		String workingDirectory = args[ 0 ];
+		if ( workingDirectory.endsWith( ".jar" ) )
+			workingDirectory = args[ 1 ];
+		new RfdInit().runScripts( workingDirectory );
 	}
 
 
@@ -42,19 +60,40 @@ public class RfdInit
 	}
 
 
+	private DatabaseInformation fromCli(
+	) {
+		DatabaseInformation dbInfo = new DatabaseInformation();
+		Scanner input = new Scanner( System.in );
+		System.out.print( "pathToMysqlExecutable -- " );
+		dbInfo.pathToMysqlExecutable = input.next();
+		System.out.print( "hostIpv4Address -- " );
+		dbInfo.hostIpv4Address = input.next();
+		System.out.print( "hostPort -- " );
+		dbInfo.hostPort = input.next();
+		System.out.print( "serverUser -- " );
+		dbInfo.serverUser = input.next();
+		System.out.print( "serverPassword -- " );
+		dbInfo.serverPassword = input.next();
+		System.out.print( "datbaseName -- " );
+		dbInfo.datbaseName = input.next();
+		return dbInfo;
+	}
+
+
 	private void runScripts(
 			String directoryPathStringWithSqlScripts
 	) {
+		DatabaseInformation dbInfo = fromCli();
 		try {
 			Path directoryPathWithSqlScripts = Paths.get( directoryPathStringWithSqlScripts );
-
 			DirectoryStream<Path> allFilesOfCurrentDirectory = Files.newDirectoryStream( directoryPathWithSqlScripts );
 			for ( Path someFilePath : allFilesOfCurrentDirectory ) {
 				File someFile = someFilePath.toFile();
 				if ( ! someFile.isFile()
 							|| ! someFile.getName().endsWith( "sql" ) )
 						continue;
-				runSqlScript( someFilePath );
+				System.out.println( someFilePath );
+				runSqlScript( someFilePath, dbInfo );
 			}
 		}
 		catch ( IOException | InvalidPathException ipe ) {
@@ -64,34 +103,26 @@ public class RfdInit
 
 
 	private void runSqlScript(
-			Path sqlFile
+			Path sqlFile, DatabaseInformation dbInfo
 	) {
-		String
-			pathToMysqlExecutable = "",
-			hostIpv4Address = "",
-			hostPort = "",
-			serverUser = "",
-			serverPassword = "",
-			datbaseName = "";
 		List<String> commandComponents = new LinkedList<>();
-		commandComponents.add( pathToMysqlExecutable );
+		commandComponents.add( dbInfo.pathToMysqlExecutable );
 		commandComponents.add( "--protocol=tcp" );
+		commandComponents.add( "--ssl-mode=DISABLED" );
 		commandComponents.add( "--default-character-set=utf8" );
-		commandComponents.add( "--host="+ hostIpv4Address );
-		commandComponents.add( "--port="+ hostPort );
-		commandComponents.add( "--user="+ serverUser );
-		commandComponents.add( "--password="+ password );
-		//commandComponents.add( "-p" );
-		//commandComponents.add( "--execute=\"source "+ sqlFile.toAbsolutePath().toString() +"\"" ); // not clear why this didn't work instead
+		commandComponents.add( "--host="+ dbInfo.hostIpv4Address );
+		commandComponents.add( "--port="+ dbInfo.hostPort );
+		commandComponents.add( "--user="+ dbInfo.serverUser );
+		commandComponents.add( "--password="+ dbInfo.serverPassword );
 		commandComponents.add( "-e" );
 		commandComponents.add( "\"source "+ sqlFile.toAbsolutePath().toString() +"\"" );
-		commandComponents.add( datbaseName );
+		commandComponents.add( dbInfo.datbaseName );
 
-		ProcessBuilder yourJar = new ProcessBuilder( commandComponents );
-		yourJar.directory( sqlFile.getParent().toFile() );
-		yourJar.inheritIO();
+		ProcessBuilder process = new ProcessBuilder( commandComponents );
+		process.directory( sqlFile.getParent().toFile() );
+		process.inheritIO();
 		try {
-			yourJar.start().waitFor();
+			process.start().waitFor();
 		}
 		catch ( IOException ie ) {
 			System.err.println( "Couldn't run sql because "+ ie );

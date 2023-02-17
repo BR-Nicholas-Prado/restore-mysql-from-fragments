@@ -28,7 +28,7 @@ dependencies {
 }
 
 group = 'com.beyondrelations.db.rfd'
-version = '0.0'
+version = '0.1'
 description = 'Runs sql scripts for specified database, assumes mysql.'
 
 /*

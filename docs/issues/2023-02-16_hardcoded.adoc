@@ -1,0 +1,44 @@
+
+= issue 2023-02-16
+
+== Values are hardcoded
+
+* assignee : Nicholas Prado
+* status : complete
+* priority : hight
+
+This is not at all portable because the database information was handwritten into RfdInit.
+Writing this into a jar to update a particular client is onerous and insecure.
+
+Provide a mechanism to harvest these values at runtime, preferably by asking.
+
+////
+== comments
+=== yyyy-MM-dd (hh:MM)
+
+=== --
+
+comment author : 
+
+comment_here
+////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
