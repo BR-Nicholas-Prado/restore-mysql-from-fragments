@@ -11,11 +11,9 @@ restore_frag_db is released under the terms of the Mozilla Public license v2.0 o
 
 == Run
 
-`java -jar restore_frag_db-0.0.jar`
+* `java -jar cli_restore_frag_db-0.1.jar [[ path to folder ]]`
+* respond to each prompt for mysql executable or the database credentials
 
-== Name
-
-restore_frag_db
 
 
 
