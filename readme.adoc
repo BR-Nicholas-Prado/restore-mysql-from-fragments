@@ -3,7 +3,7 @@
 
 == Purpose
 
-A means of restoring a mysql database from multiple files in a single folder.
+A means of restoring a mysql database from multiple files in a single folder, not recursively.
 
 == License
 
@@ -11,8 +11,13 @@ restore_frag_db is released under the terms of the Mozilla Public license v2.0 o
 
 == Run
 
-* `java -jar cli_restore_frag_db-0.1.jar [[ path to folder ]]`
-* respond to each prompt for mysql executable or the database credentials
+* `java -jar cli_restore_frag_db-1.0.jar`
+* respond to each prompt for
+** path to folder with sql files
+** database credential file 
+** mysql executable
+
+There are incomplete reports that this does not work on ubuntu.
 
 
 

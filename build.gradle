@@ -7,11 +7,10 @@ plugins {
 	id 'com.github.jk1.dependency-license-report' version '2.0' // ¶ task generateLicenseReport to see dependency licenses
 	id 'com.github.ben-manes.versions' version '0.42.0'  // ¶ task dependencyUpdates to see updated libraries
 	id 'java'
-	// id 'com.github.johnrengelman.shadow' version '7.1.2' // ¶ for uber jar
+	id 'com.github.johnrengelman.shadow' version '7.1.2' // ¶ for uber jar
 	id 'signing'
 	id 'maven-publish'
-	// id 'distribution' // ¶ for zip file with readme
-	// id 'application' // ¶ for run task
+	id 'application' // ¶ for run task
 }
 
 repositories {
@@ -20,15 +19,14 @@ repositories {
 }
 
 dependencies {
-	// implementation 'com.alibaba:fastjson:1.2.28'
-	// implementation 'org.slf4j:slf4j-api:2.0.0'
+	implementation 'org.json:json:20180813'
 
 	testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
 }
 
 group = 'com.beyondrelations.db.rfd'
-version = '0.1'
+version = '1.0'
 description = 'Runs sql scripts for specified database, assumes mysql.'
 
 /*
@@ -85,7 +83,6 @@ jar {
 
 // ¶ to change the default shadowJar filename // https://imperceptiblethoughts.com/shadow/configuration/
 
-/*
 // ¶ https://docs.gradle.org/current/userguide/application_plugin.html
 run {
 	mainClassName = 'com.beyondrelations.db.rfd.RfdInit'
@@ -98,7 +95,6 @@ task run_( type: JavaExec) {
 	main = 'com.beyondrelations.db.rfd.RfdInit'
 	standardInput = System.in
 }
-*/
 
 /*
 // ¶ signs jar file with keystore certificate

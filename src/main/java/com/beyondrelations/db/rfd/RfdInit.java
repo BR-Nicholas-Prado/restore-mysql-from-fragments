@@ -1,25 +1,13 @@
 
 package com.beyondrelations.db.rfd;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.stream.Stream;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
 
-//import com.alibaba.fastjson.JSON;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
 Runs sql scripts in the working directory using the supplied workflo json run config with database information.
@@ -43,14 +31,22 @@ public class RfdInit
 	public static void main(
 			String[] args
 	) {
-		if ( args.length < 1 ) {
-			System.out.println( "needs start arg for working folder" );
-			return;
+		Scanner input = new Scanner( System.in );
+
+		System.out.print( "path to folder that contains sql files -- " );
+		String workingDirectory = input.nextLine();
+
+		if ( workingDirectory.trim().isEmpty()
+				&& input.hasNext() ) {
+			workingDirectory = input.nextLine().trim();
 		}
-		String workingDirectory = args[ 0 ];
-		if ( workingDirectory.endsWith( ".jar" ) )
-			workingDirectory = args[ 1 ];
-		new RfdInit().runScripts( workingDirectory );
+
+		if ( workingDirectory.trim().isEmpty() ) {
+			workingDirectory = ".";
+		}
+
+		new RfdInit().runScripts(
+				input, workingDirectory );
 	}
 
 
@@ -61,40 +57,176 @@ public class RfdInit
 
 
 	private DatabaseInformation fromCli(
+			Scanner input
 	) {
 		DatabaseInformation dbInfo = new DatabaseInformation();
-		Scanner input = new Scanner( System.in );
-		System.out.print( "pathToMysqlExecutable -- " );
-		dbInfo.pathToMysqlExecutable = input.next();
-		System.out.print( "hostIpv4Address -- " );
+
+		System.out.print( "\npath To Mysql Executable -- " );
+		dbInfo.pathToMysqlExecutable = input.nextLine();
+
+		if ( dbInfo.pathToMysqlExecutable.trim().isEmpty()
+				&& input.hasNext() ) {
+			dbInfo.pathToMysqlExecutable = input.nextLine().trim();
+		}
+
+		System.out.print( "\nhost Ipv4 Address -- " );
 		dbInfo.hostIpv4Address = input.next();
-		System.out.print( "hostPort -- " );
+
+		System.out.print( "\nhost Port -- " );
 		dbInfo.hostPort = input.next();
-		System.out.print( "serverUser -- " );
+
+		System.out.print( "\nserver User -- " );
 		dbInfo.serverUser = input.next();
-		System.out.print( "serverPassword -- " );
-		dbInfo.serverPassword = input.next();
-		System.out.print( "datbaseName -- " );
+
+		System.out.print( "\nserver Password -- " );
+		dbInfo.serverPassword = input.next(); // assuming no space
+
+		System.out.print( "\ndatbase Name -- " );
 		dbInfo.datbaseName = input.next();
+
 		return dbInfo;
 	}
 
 
+	private DatabaseInformation fromJson(
+			Scanner input,
+			String saysPathToJsonCredentials
+	) {
+		try {
+			Path pathToJsonCredentials = Paths.get(
+					saysPathToJsonCredentials );
+			List<String> allLinesOfFile = Files.readAllLines(
+					pathToJsonCredentials );
+
+			if ( allLinesOfFile.isEmpty() ) {
+				System.out.println(
+						"\nempty file" );
+				return fromCli(
+						input );
+			}
+
+			StringBuilder buffer = new StringBuilder(
+					20 * allLinesOfFile.size() );
+
+			for ( String line : allLinesOfFile ) {
+				buffer.append( line ).append( "\n" );
+			}
+
+			String entireContent = buffer.toString();
+			JSONObject entireConfig = new JSONObject(
+					entireContent );
+			final String keyDatabaseSection = "database",
+					keyDatabaseName = "targetName",
+					keyDatabaseUser = "user",
+					keyDatabasePassword = "pass",
+					keyDatabaseIpv4 = "ipv4",
+					keyDatabasePort = "port",
+					keyDbAddressSection = "ipAddress";
+
+			if ( ! entireConfig.has(
+					keyDatabaseSection ) ) { // ¶ assuming the rest is fine
+				System.out.println(
+						"\nunrecognized json schema" );
+				return fromCli(
+						input );
+			}
+
+			JSONObject entireDatabaseSection = entireConfig.getJSONObject(
+					keyDatabaseSection );
+			JSONObject entireAddressSection = entireDatabaseSection.getJSONObject(
+					keyDbAddressSection );
+			DatabaseInformation dbInfo = new DatabaseInformation();
+
+			dbInfo.hostIpv4Address = entireAddressSection.getString(
+					keyDatabaseIpv4 );
+			dbInfo.hostPort = Integer.toString(
+					entireAddressSection.getInt(
+								keyDatabasePort ) );
+
+			dbInfo.serverUser = entireDatabaseSection.getString(
+					keyDatabaseUser );
+			dbInfo.serverPassword = entireDatabaseSection.getString(
+					keyDatabasePassword );
+			dbInfo.datbaseName = entireDatabaseSection.getString(
+					keyDatabaseName );
+
+			System.out.print( "\npath To Mysql Executable -- " );
+			dbInfo.pathToMysqlExecutable = input.nextLine();
+
+			return dbInfo;
+		}
+		catch (
+				IOException | InvalidPathException ie
+		) {
+			System.err.println(
+					"\nproblem with reading json file, "+ ie );
+			return fromCli(
+					input );
+		}
+		catch (
+				JSONException je
+		) {
+			System.err.println(
+					"\nproblem with json content "+ je );
+			return fromCli(
+					input );
+		}
+	}
+
+
+	private DatabaseInformation getDatabaseInfo(
+			Scanner input
+	) {
+		System.out.print( "\npath to json credentials (blank to enter individually) -- " );
+		String pathToJsonCredentials = input.nextLine();
+
+		if ( pathToJsonCredentials.trim().isEmpty()
+				&& input.hasNext() ) {
+			pathToJsonCredentials = input.nextLine().trim();
+		}
+
+		if ( pathToJsonCredentials.isEmpty()
+				|| ! pathToJsonCredentials.endsWith(
+						"json" ) ) {
+			return fromCli(
+					input );
+		}
+		else {
+			return fromJson(
+					input, pathToJsonCredentials );
+		}
+	}
+
+
 	private void runScripts(
+			Scanner input,
 			String directoryPathStringWithSqlScripts
 	) {
-		DatabaseInformation dbInfo = fromCli();
+		DatabaseInformation dbInfo = getDatabaseInfo(
+				input );
+
 		try {
-			Path directoryPathWithSqlScripts = Paths.get( directoryPathStringWithSqlScripts );
-			DirectoryStream<Path> allFilesOfCurrentDirectory = Files.newDirectoryStream( directoryPathWithSqlScripts );
+			Path directoryPathWithSqlScripts = Paths.get(
+					directoryPathStringWithSqlScripts );
+			DirectoryStream<Path> allFilesOfCurrentDirectory = Files.newDirectoryStream(
+					directoryPathWithSqlScripts );
+
 			for ( Path someFilePath : allFilesOfCurrentDirectory ) {
 				File someFile = someFilePath.toFile();
+
 				if ( ! someFile.isFile()
-							|| ! someFile.getName().endsWith( "sql" ) )
+						|| ! someFile.getName().endsWith(
+									"sql" ) )
 						continue;
-				System.out.println( someFilePath );
-				runSqlScript( someFilePath, dbInfo );
+
+				System.out.println(
+						"\n\t"+ someFilePath );
+				runSqlScript(
+						someFilePath, dbInfo );
 			}
+
+			System.err.println(
+					"\nFinished" );
 		}
 		catch ( IOException | InvalidPathException ipe ) {
 			System.err.println( ipe );
@@ -106,6 +238,7 @@ public class RfdInit
 			Path sqlFile, DatabaseInformation dbInfo
 	) {
 		List<String> commandComponents = new LinkedList<>();
+
 		commandComponents.add( dbInfo.pathToMysqlExecutable );
 		commandComponents.add( "--protocol=tcp" );
 		commandComponents.add( "--ssl-mode=DISABLED" );
@@ -121,6 +254,7 @@ public class RfdInit
 		ProcessBuilder process = new ProcessBuilder( commandComponents );
 		process.directory( sqlFile.getParent().toFile() );
 		process.inheritIO();
+
 		try {
 			process.start().waitFor();
 		}
